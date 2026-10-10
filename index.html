@@ -43,7 +43,7 @@
         <p class="case-description">
           La universidad cuenta con un módulo donde los estudiantes pueden solicitar temporalmente 
           laptops, proyectores y otros equipos para exposiciones o trabajos académicos.
-          Actualmente, el sistema solo registra el nombre del estudiante y el equipo solicitado.
+          Ahora el sistema registra el nombre del estudiante, el equipo solicitado y la fecha de devolución.
         </p>
       </div>
       <div class="case-footer">
@@ -53,7 +53,7 @@
             <line x1="12" y1="16" x2="12" y2="12"></line>
             <line x1="12" y1="8" x2="12.01" y2="8"></line>
           </svg>
-          <span>Campos activos actuales: <strong>Nombre del estudiante</strong> y <strong>Equipo solicitado</strong></span>
+          <span>Campos activos actuales: <strong>Nombre del estudiante</strong>, <strong>Equipo solicitado</strong> y <strong>Fecha de devolución</strong></span>
         </div>
       </div>
     </section>
@@ -125,7 +125,7 @@
             </svg>
             Registrar Préstamo
           </h3>
-          <p class="card-desc">Ingresa los datos del estudiante y el equipo requerido</p>
+          <p class="card-desc">Ingresa los datos del estudiante, el equipo requerido y la fecha de devolución</p>
         </div>
 
         <form id="loanForm" class="loan-form">
@@ -184,6 +184,29 @@
             <small class="hint">Equipo de cómputo o audiovisual asignado</small>
           </div>
 
+          <!-- NUEVO: Fecha de devolución -->
+          <div class="form-group">
+            <label for="returnDate">
+              <span>Fecha de Devolución</span>
+              <span class="required">*</span>
+            </label>
+            <div class="input-wrapper">
+              <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <input 
+                type="date" 
+                id="returnDate" 
+                name="returnDate" 
+                required
+              >
+            </div>
+            <small class="hint">Fecha en la que el estudiante debe devolver el equipo</small>
+          </div>
+
           <button type="submit" class="btn btn-primary" id="btnSubmit">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
@@ -229,6 +252,7 @@
                 <th>Nombre del Estudiante</th>
                 <th>Equipo Solicitado</th>
                 <th>Fecha y Hora</th>
+                <th>Fecha de Devolución</th>
                 <th>Estado</th>
                 <th class="text-center">Acciones</th>
               </tr>

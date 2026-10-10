@@ -5,6 +5,7 @@ const initialLoans = [
     studentName: "Carlos Mendoza Silva",
     equipment: "Laptop HP ProBook 450",
     date: "10/10/2026, 09:15 AM",
+    returnDate: "2026-10-12",
     status: "Prestado"
   },
   {
@@ -12,6 +13,7 @@ const initialLoans = [
     studentName: "María Fernández Quispe",
     equipment: "Proyector Epson PowerLite XGA",
     date: "10/10/2026, 10:30 AM",
+    returnDate: "2026-10-11",
     status: "Prestado"
   },
   {
@@ -19,6 +21,7 @@ const initialLoans = [
     studentName: "Alejandro Ruiz Torres",
     equipment: "Laptop Lenovo ThinkPad T14",
     date: "10/10/2026, 11:00 AM",
+    returnDate: "2026-10-10",
     status: "Devuelto"
   }
 ];
@@ -46,6 +49,7 @@ function saveLoans(loans) {
 const loanForm = document.getElementById("loanForm");
 const studentNameInput = document.getElementById("studentName");
 const equipmentInput = document.getElementById("equipment");
+const returnDateInput = document.getElementById("returnDate"); // NUEVO: fecha de devolución
 const searchInput = document.getElementById("searchInput");
 const loansTableBody = document.getElementById("loansTableBody");
 const emptyState = document.getElementById("emptyState");
@@ -56,12 +60,30 @@ const laptopCountEl = document.getElementById("laptopCount");
 const projectorCountEl = document.getElementById("projectorCount");
 const returnedCountEl = document.getElementById("returnedCount");
 
+// NUEVO: obtener la fecha de hoy en formato YYYY-MM-DD
+function getTodayISO() {
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  return `${now.getFullYear()}-${month}-${day}`;
+}
+
+// NUEVO: mostrar la fecha de devolución como DD/MM/YYYY
+function formatReturnDate(isoDate) {
+  if (!isoDate) return "Sin fecha";
+  const [year, month, day] = isoDate.split("-");
+  return `${day}/${month}/${year}`;
+}
+
+// NUEVO: no permitir fechas de devolución anteriores a hoy
+returnDateInput.min = getTodayISO();
+
 // Notificación Toast
 function showToast(message, type = "info") {
   const toast = document.getElementById("toast");
   toast.textContent = message;
   toast.className = "toast show";
-  
+
   if (type === "success") {
     toast.style.backgroundColor = "#065f46";
   } else if (type === "danger") {
@@ -114,10 +136,22 @@ function renderLoans(filterText = "") {
     const isReturned = loan.status === "Devuelto";
     const isLaptop = loan.equipment.toLowerCase().includes("laptop");
     const isProjector = loan.equipment.toLowerCase().includes("proyector");
-    
+
+    // NUEVO: el préstamo está vencido si no se devolvió y la fecha ya pasó
+    const isOverdue = !isReturned && loan.returnDate && loan.returnDate < getTodayISO();
+
     let equipIconClass = "";
     if (isLaptop) equipIconClass = "equip-laptop";
     else if (isProjector) equipIconClass = "equip-projector";
+
+    let badgeText = '⏳ Prestado';
+    let badgeStyle = '';
+    if (isReturned) {
+      badgeText = '✓ Devuelto';
+    } else if (isOverdue) {
+      badgeText = '⚠ Vencido';
+      badgeStyle = 'background-color: #fee2e2; color: #991b1b;';
+    }
 
     return `
       <tr>
@@ -133,24 +167,27 @@ function renderLoans(filterText = "") {
         <td style="color: var(--text-muted); font-size: 0.82rem;">
           ${loan.date}
         </td>
+        <td style="font-size: 0.82rem; ${isOverdue ? 'color: #991b1b; font-weight: 600;' : ''}">
+          ${formatReturnDate(loan.returnDate)}
+        </td>
         <td>
-          <span class="badge ${isReturned ? 'badge-returned' : 'badge-active'}">
-            ${isReturned ? '✓ Devuelto' : '⏳ Prestado'}
+          <span class="badge ${isReturned ? 'badge-returned' : 'badge-active'}" style="${badgeStyle}">
+            ${badgeText}
           </span>
         </td>
         <td class="text-center">
           <div class="action-buttons">
-            <button 
-              type="button" 
-              class="btn btn-sm ${isReturned ? 'btn-danger' : 'btn-success'}" 
+            <button
+              type="button"
+              class="btn btn-sm ${isReturned ? 'btn-danger' : 'btn-success'}"
               onclick="toggleLoanStatus(${loan.id})"
               title="${isReturned ? 'Marcar como pendiente/prestado' : 'Marcar como entregado y devuelto'}"
             >
               ${isReturned ? 'Reabrir' : 'Devolver'}
             </button>
-            <button 
-              type="button" 
-              class="btn btn-sm btn-danger" 
+            <button
+              type="button"
+              class="btn btn-sm btn-danger"
               onclick="deleteLoan(${loan.id})"
               title="Eliminar registro"
             >
@@ -191,9 +228,16 @@ loanForm.addEventListener("submit", function (e) {
 
   const studentName = studentNameInput.value.trim();
   const equipment = equipmentInput.value.trim();
+  const returnDate = returnDateInput.value; // NUEVO
 
-  if (!studentName || !equipment) {
+  if (!studentName || !equipment || !returnDate) {
     showToast("Por favor complete los campos obligatorios.", "danger");
+    return;
+  }
+
+  // NUEVO: validar que la fecha de devolución no sea pasada
+  if (returnDate < getTodayISO()) {
+    showToast("La fecha de devolución no puede ser anterior a hoy.", "danger");
     return;
   }
 
@@ -203,6 +247,7 @@ loanForm.addEventListener("submit", function (e) {
     studentName: studentName,
     equipment: equipment,
     date: getCurrentFormattedDate(),
+    returnDate: returnDate, // NUEVO
     status: "Prestado"
   };
 
@@ -212,6 +257,7 @@ loanForm.addEventListener("submit", function (e) {
   // Limpiar formulario y re-renderizar
   studentNameInput.value = "";
   equipmentInput.value = "";
+  returnDateInput.value = ""; // NUEVO
   studentNameInput.focus();
 
   renderLoans(searchInput.value);
